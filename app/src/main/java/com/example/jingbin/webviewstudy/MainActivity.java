@@ -7,13 +7,13 @@ import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.AppCompatEditText;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.widget.AutoCompleteTextView;
 import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -29,7 +29,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     // 是否开启了主页，没有开启则会返回主页
     public static boolean isLaunch = false;
-    private AppCompatEditText etSearch;
+    private AutoCompleteTextView etSearch;
     private RadioButton rbSystem;
 
     @Override
@@ -77,33 +77,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.bt_baidu:// 百度一下
                 String baiDuUrl = "http://www.baidu.com";
-                loadUrl(baiDuUrl, "百度一下");
+                loadUrl(baiDuUrl, getString(R.string.text_baidu));
                 break;
             case R.id.bt_movie:// 网络视频
                 String movieUrl = "https://sv.baidu.com/videoui/page/videoland?context=%7B%22nid%22%3A%22sv_5861863042579737844%22%7D&pd=feedtab_h5";
-                loadUrl(movieUrl, "网络视频");
+                loadUrl(movieUrl, getString(R.string.text_movie));
                 break;
             case R.id.bt_upload_photo:// 上传图片
                 String uploadUrl = "file:///android_asset/upload_photo.html";
-                loadUrl(uploadUrl, "上传图片测试");
+                loadUrl(uploadUrl, getString(R.string.text_movie));
                 break;
             case R.id.bt_call:// 打电话、发短信、发邮件、JS
                 String callUrl = "file:///android_asset/callsms.html";
-                loadUrl(callUrl, "电话短信邮件测试");
+                loadUrl(callUrl, getString(R.string.text_js));
                 break;
             case R.id.bt_java_js://  js与android原生代码互调
                 String javaJs = "file:///android_asset/java_js.html";
-                loadUrl(javaJs, "js与android原生代码互调");
+                loadUrl(javaJs, getString(R.string.js_android));
                 break;
             case R.id.bt_deeplink:// DeepLink通过网页跳入App
                 String deepLinkUrl = "file:///android_asset/deeplink.html";
-                loadUrl(deepLinkUrl, "DeepLink测试");
+                loadUrl(deepLinkUrl, getString(R.string.deeplink));
                 break;
             case R.id.tv_version:
                 AlertDialog.Builder builder = new AlertDialog.Builder(v.getContext());
                 builder.setTitle("感谢");
                 builder.setMessage("开源不易，给作者一个star好吗？😊");
-                builder.setCancelable(false);
                 builder.setNegativeButton("已给", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -161,7 +160,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.actionbar_update:
-                loadUrl("https://fir.im/webviewstudy", "网页浏览器 - fir.im");
+                loadUrl("http://d.6short.com/webviewstudy", "网页浏览器 - fir.im");
+                break;
+            case R.id.actionbar_about:
+                loadUrl("https://github.com/youlookwhat/WebViewStudy", "WebViewStudy");
                 break;
             default:
                 break;

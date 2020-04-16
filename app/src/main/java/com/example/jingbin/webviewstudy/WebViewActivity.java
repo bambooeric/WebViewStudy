@@ -16,6 +16,7 @@ import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -23,7 +24,7 @@ import android.view.ViewGroup;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
-import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,8 +33,10 @@ import com.example.jingbin.webviewstudy.config.IWebPageView;
 import com.example.jingbin.webviewstudy.config.MyJavascriptInterface;
 import com.example.jingbin.webviewstudy.config.MyWebChromeClient;
 import com.example.jingbin.webviewstudy.config.MyWebViewClient;
-import com.example.jingbin.webviewstudy.utils.BaseTools;
+import com.example.jingbin.webviewstudy.config.WebProgress;
+import com.example.jingbin.webviewstudy.utils.CheckNetwork;
 import com.example.jingbin.webviewstudy.utils.StatusBarUtil;
+import com.example.jingbin.webviewstudy.utils.WebTools;
 
 /**
  * 网页可以处理:
@@ -47,20 +50,23 @@ import com.example.jingbin.webviewstudy.utils.StatusBarUtil;
  * - 前端代码嵌入js(缺乏灵活性)
  * - 网页自带js跳转
  * 被作为第三方浏览器打开
+ *
+ * @author jingbin
+ * link to https://github.com/youlookwhat/WebViewStudy
  */
 public class WebViewActivity extends AppCompatActivity implements IWebPageView {
 
     // 进度条
-    private ProgressBar mProgressBar;
-    private WebView webView;
+    private WebProgress mProgressBar;
     // 全屏时视频加载view
     private FrameLayout videoFullView;
     // 加载视频相关
     private MyWebChromeClient mWebChromeClient;
     // 网页链接
     private String mUrl;
-    private Toolbar mTitleToolBar;
     // 可滚动的title 使用简单 没有渐变效果，文字两旁有阴影
+    private Toolbar mTitleToolBar;
+    private WebView webView;
     private TextView tvGunTitle;
     private String mTitle;
 
@@ -71,8 +77,16 @@ public class WebViewActivity extends AppCompatActivity implements IWebPageView {
         getIntentData();
         initTitle();
         initWebView();
-        webView.loadUrl(mUrl);
+        handleLoadUrl();
         getDataFromBrowser(getIntent());
+    }
+
+    private void handleLoadUrl() {
+        if (!TextUtils.isEmpty(mUrl) && mUrl.endsWith("mp4") && Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1) {
+            webView.loadData(WebTools.getVideoHtmlBody(mUrl), "text/html", "UTF-8");
+        } else {
+            webView.loadUrl(mUrl);
+        }
     }
 
     private void getIntentData() {
@@ -83,15 +97,20 @@ public class WebViewActivity extends AppCompatActivity implements IWebPageView {
 
     private void initTitle() {
         StatusBarUtil.setColor(this, ContextCompat.getColor(this, R.color.colorPrimary), 0);
-        mProgressBar = findViewById(R.id.pb_progress);
-        webView = findViewById(R.id.webview_detail);
-        videoFullView = findViewById(R.id.video_fullView);
-        mTitleToolBar = findViewById(R.id.title_tool_bar);
-        tvGunTitle = findViewById(R.id.tv_gun_title);
+        RelativeLayout rl_web_container = findViewById(R.id.rl_web_container);
+        webView = new WebView(this);
+        mProgressBar = new WebProgress(this);
+        mProgressBar.setVisibility(View.GONE);
+        rl_web_container.addView(webView, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+        rl_web_container.addView(mProgressBar);
+        mProgressBar.setColor(ContextCompat.getColor(this, R.color.colorAccent));
+        mProgressBar.show();
         initToolBar();
     }
 
     private void initToolBar() {
+        mTitleToolBar = findViewById(R.id.title_tool_bar);
+        tvGunTitle = findViewById(R.id.tv_gun_title);
         setSupportActionBar(mTitleToolBar);
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
@@ -122,21 +141,17 @@ public class WebViewActivity extends AppCompatActivity implements IWebPageView {
                 break;
             case R.id.actionbar_share:// 分享到
                 String shareText = webView.getTitle() + webView.getUrl();
-                BaseTools.share(WebViewActivity.this, shareText);
+                WebTools.share(WebViewActivity.this, shareText);
                 break;
             case R.id.actionbar_cope:// 复制链接
-                if (!TextUtils.isEmpty(webView.getUrl())) {
-                    BaseTools.copy(webView.getUrl());
-                    Toast.makeText(this, "复制成功", Toast.LENGTH_LONG).show();
-                }
+                WebTools.copy(webView.getUrl());
+                Toast.makeText(this, "复制成功", Toast.LENGTH_LONG).show();
                 break;
             case R.id.actionbar_open:// 打开链接
-                BaseTools.openLink(WebViewActivity.this, webView.getUrl());
+                WebTools.openLink(WebViewActivity.this, webView.getUrl());
                 break;
             case R.id.actionbar_webview_refresh:// 刷新页面
-                if (webView != null) {
-                    webView.reload();
-                }
+                webView.reload();
                 break;
             default:
                 break;
@@ -146,10 +161,7 @@ public class WebViewActivity extends AppCompatActivity implements IWebPageView {
 
     @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
     private void initWebView() {
-        mProgressBar.setVisibility(View.VISIBLE);
         WebSettings ws = webView.getSettings();
-        // 网页内容的宽度是否可大于WebView控件的宽度
-        ws.setLoadWithOverviewMode(false);
         // 保存表单数据
         ws.setSaveFormData(true);
         // 是否应该支持使用其屏幕缩放控件和手势缩放
@@ -161,10 +173,13 @@ public class WebViewActivity extends AppCompatActivity implements IWebPageView {
         // 设置缓存模式
         ws.setCacheMode(WebSettings.LOAD_DEFAULT);
         // setDefaultZoom  api19被弃用
-        // 设置此属性，可任意比例缩放。
+        // 网页内容的宽度自适应屏幕
+        ws.setLoadWithOverviewMode(true);
         ws.setUseWideViewPort(true);
-        // 不缩放
-        webView.setInitialScale(100);
+        // 网页缩放至100，一般的网页达到屏幕宽度效果，个别除外
+//        webView.setInitialScale(100);
+        // 关掉下滑弧形阴影
+//        webView.setOverScrollMode(WebView.OVER_SCROLL_NEVER);
         // 告诉WebView启用JavaScript执行。默认的是false。
         ws.setJavaScriptEnabled(true);
         //  页面加载好以后，再放开图片
@@ -172,7 +187,11 @@ public class WebViewActivity extends AppCompatActivity implements IWebPageView {
         // 使用localStorage则必须打开
         ws.setDomStorageEnabled(true);
         // 排版适应屏幕
-        ws.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.NARROW_COLUMNS);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            ws.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.NARROW_COLUMNS);
+        } else {
+            ws.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.NORMAL);
+        }
         // WebView是否新窗口打开(加了后可能打不开网页)
 //        ws.setSupportMultipleWindows(true);
 
@@ -182,6 +201,9 @@ public class WebViewActivity extends AppCompatActivity implements IWebPageView {
         }
         /** 设置字体默认缩放大小(改变网页字体大小,setTextSize  api14被弃用)*/
         ws.setTextZoom(100);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            webView.setScrollBarSize(WebTools.dp2px(this, 3));
+        }
 
         mWebChromeClient = new MyWebChromeClient(this);
         webView.setWebChromeClient(mWebChromeClient);
@@ -195,11 +217,6 @@ public class WebViewActivity extends AppCompatActivity implements IWebPageView {
             }
         });
 
-    }
-
-    @Override
-    public void hindProgressBar() {
-        mProgressBar.setVisibility(View.GONE);
     }
 
     @Override
@@ -232,11 +249,7 @@ public class WebViewActivity extends AppCompatActivity implements IWebPageView {
 
     @Override
     public void startProgress(int newProgress) {
-        mProgressBar.setVisibility(View.VISIBLE);
-        mProgressBar.setProgress(newProgress);
-        if (newProgress == 100) {
-            mProgressBar.setVisibility(View.GONE);
-        }
+        mProgressBar.setWebProgress(newProgress);
     }
 
     public void setTitle(String mTitle) {
@@ -249,10 +262,22 @@ public class WebViewActivity extends AppCompatActivity implements IWebPageView {
      * 前端调用js代码
      */
     @Override
-    public void addImageClickListener() {
+    public void onPageFinished(WebView view, String url) {
+        if (!CheckNetwork.isNetworkConnected(this)) {
+            mProgressBar.hide();
+        }
         loadImageClickJS();
         loadTextClickJS();
         loadCallJS();
+        loadWebsiteSourceCodeJS();
+    }
+
+    /**
+     * 处理是否唤起三方app
+     */
+    @Override
+    public boolean isOpenThirdApp(String url) {
+        return WebTools.handleThirdApp(this, url);
     }
 
     /**
@@ -260,7 +285,7 @@ public class WebViewActivity extends AppCompatActivity implements IWebPageView {
      * 这段js函数的功能就是，遍历所有的img节点，并添加onclick函数，函数的功能是在图片点击的时候调用本地java接口并传递url过去
      */
     private void loadImageClickJS() {
-        webView.loadUrl("javascript:(function(){" +
+        loadJs("javascript:(function(){" +
                 "var objs = document.getElementsByTagName(\"img\");" +
                 "for(var i=0;i<objs.length;i++)" +
                 "{" +
@@ -274,7 +299,7 @@ public class WebViewActivity extends AppCompatActivity implements IWebPageView {
      * 遍历所有的<li>节点,将节点里的属性传递过去(属性自定义,用于页面跳转)
      */
     private void loadTextClickJS() {
-        webView.loadUrl("javascript:(function(){" +
+        loadJs("javascript:(function(){" +
                 "var objs =document.getElementsByTagName(\"li\");" +
                 "for(var i=0;i<objs.length;i++)" +
                 "{" +
@@ -289,13 +314,17 @@ public class WebViewActivity extends AppCompatActivity implements IWebPageView {
      */
     private void loadCallJS() {
         // 无参数调用
-        webView.loadUrl("javascript:javacalljs()");
+        loadJs("javascript:javacalljs()");
         // 传递参数调用
-        webView.loadUrl("javascript:javacalljswithargs('" + "android传入到网页里的数据，有参" + "')");
+        loadJs("javascript:javacalljswithargs('" + "android传入到网页里的数据，有参" + "')");
     }
 
-    public FrameLayout getVideoFullView() {
-        return videoFullView;
+    /**
+     * get website source code
+     * 获取网页源码
+     */
+    private void loadWebsiteSourceCodeJS() {
+        loadJs("javascript:window.injectedObject.showSource(document.getElementsByTagName('html')[0].innerHTML);");
     }
 
     /**
@@ -304,6 +333,26 @@ public class WebViewActivity extends AppCompatActivity implements IWebPageView {
     public void hideCustomView() {
         mWebChromeClient.onHideCustomView();
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+    }
+
+    @Override
+    public FrameLayout getVideoFullView() {
+        return videoFullView;
+    }
+
+    @Override
+    public View getVideoLoadingProgressView() {
+        return LayoutInflater.from(this).inflate(R.layout.video_loading_progress, null);
+    }
+
+    @Override
+    public void onReceivedTitle(WebView view, String title) {
+        setTitle(title);
+    }
+
+    @Override
+    public void startFileChooserForResult(Intent intent, int requestCode) {
+        startActivityForResult(intent, requestCode);
     }
 
     /**
@@ -358,13 +407,20 @@ public class WebViewActivity extends AppCompatActivity implements IWebPageView {
      * 直接通过三方浏览器打开时，回退到首页
      */
     public void handleFinish() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            finishAfterTransition();
-        } else {
-            finish();
-        }
+        supportFinishAfterTransition();
         if (!MainActivity.isLaunch) {
             MainActivity.start(this);
+        }
+    }
+
+    /**
+     * 4.4以上可用 evaluateJavascript 效率高
+     */
+    private void loadJs(String jsString) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            webView.evaluateJavascript(jsString, null);
+        } else {
+            webView.loadUrl(jsString);
         }
     }
 
@@ -441,7 +497,10 @@ public class WebViewActivity extends AppCompatActivity implements IWebPageView {
 
     @Override
     protected void onDestroy() {
-        videoFullView.removeAllViews();
+        if (videoFullView != null) {
+            videoFullView.removeAllViews();
+            videoFullView = null;
+        }
         if (webView != null) {
             ViewGroup parent = (ViewGroup) webView.getParent();
             if (parent != null) {
@@ -469,13 +528,6 @@ public class WebViewActivity extends AppCompatActivity implements IWebPageView {
         Intent intent = new Intent(mContext, WebViewActivity.class);
         intent.putExtra("mUrl", mUrl);
         intent.putExtra("mTitle", mTitle == null ? "加载中..." : mTitle);
-        mContext.startActivity(intent);
-    }
-
-    public static void loadUrl(Context mContext, String mUrl) {
-        Intent intent = new Intent(mContext, WebViewActivity.class);
-        intent.putExtra("mUrl", mUrl);
-        intent.putExtra("mTitle", "详情");
         mContext.startActivity(intent);
     }
 }

@@ -1,14 +1,15 @@
-package com.example.jingbin.webviewstudy.config;
+package com.example.jingbin.webviewstudy.tencentx5;
 
 import android.content.Intent;
 import android.view.View;
-import android.webkit.WebView;
 import android.widget.FrameLayout;
 
+import com.tencent.smtt.sdk.WebView;
+
 /**
- * Created by jingbin on 2019/07/27.
+ * Created by jingbin on 2016/11/17.
  */
-public interface IWebPageView {
+public interface IX5WebPageView {
 
     /**
      * 显示webview
@@ -60,7 +61,7 @@ public interface IWebPageView {
     /**
      * 返回标题处理
      */
-    void onReceivedTitle(WebView view, String title);
+    void onReceivedTitle(com.tencent.smtt.sdk.WebView view, String title);
 
     /**
      * 上传图片打开文件夹

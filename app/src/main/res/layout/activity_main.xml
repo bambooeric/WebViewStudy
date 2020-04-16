@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.v4.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -9,10 +9,10 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:paddingBottom="@dimen/activity_vertical_margin"
         android:paddingLeft="@dimen/activity_horizontal_margin"
-        android:paddingRight="@dimen/activity_horizontal_margin"
         android:paddingTop="@dimen/activity_vertical_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingBottom="@dimen/activity_vertical_margin"
         tools:context="com.example.jingbin.webviewstudy.MainActivity">
 
         <RadioGroup
@@ -35,19 +35,30 @@
             <RadioButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
                 android:layout_marginLeft="20dp"
                 android:text="腾讯x5" />
         </RadioGroup>
 
-        <android.support.v7.widget.AppCompatEditText
-            android:id="@+id/et_search"
+        <android.support.design.widget.TextInputLayout
+            android:focusableInTouchMode="true"
+            android:focusable="true"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="30dp"
-            android:hint="@string/string_hit"
-            android:imeOptions="actionSearch"
-            android:inputType="text"
-            android:textSize="15sp" />
+            android:layout_marginTop="10dp">
+
+            <AutoCompleteTextView
+                android:id="@+id/et_search"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/string_hit"
+                android:imeOptions="actionSearch"
+                android:inputType="text"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:textSize="15sp" />
+
+        </android.support.design.widget.TextInputLayout>
 
         <android.support.v7.widget.AppCompatButton
             android:id="@+id/bt_openUrl"
@@ -55,8 +66,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:layout_marginBottom="20dp"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="5dp"
             android:text="@string/bt_open_url" />
 
         <TextView
@@ -120,23 +130,18 @@
             android:layout_width="match_parent"
             android:layout_height="1px" />
 
+        <TextView
+            android:id="@+id/tv_version"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="end"
+            android:paddingLeft="5dp"
+            android:paddingTop="3dp"
+            android:paddingRight="5dp"
+            android:paddingBottom="3dp"
+            android:textSize="11sp"
+            tools:ignore="SmallSp"
+            tools:text="❤版本：v2.0" />
     </LinearLayout>
-
-    <TextView
-        android:id="@+id/tv_version"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
-        android:layout_marginBottom="30dp"
-        android:layout_marginEnd="30dp"
-        android:layout_marginRight="20dp"
-        android:paddingBottom="3dp"
-        android:paddingLeft="5dp"
-        android:paddingRight="5dp"
-        android:paddingTop="3dp"
-        android:textSize="11sp"
-        tools:ignore="SmallSp"
-        tools:text="版本：v2.0" />
-</RelativeLayout>
+</android.support.v4.widget.NestedScrollView>
