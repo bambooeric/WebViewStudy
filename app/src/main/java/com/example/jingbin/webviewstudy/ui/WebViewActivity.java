@@ -1,4 +1,4 @@
-package com.example.jingbin.webviewstudy;
+package com.example.jingbin.webviewstudy.ui;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -8,11 +8,12 @@ import android.content.pm.ActivityInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -28,6 +29,8 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.jingbin.webviewstudy.MainActivity;
+import com.example.jingbin.webviewstudy.R;
 import com.example.jingbin.webviewstudy.config.FullscreenHolder;
 import com.example.jingbin.webviewstudy.config.IWebPageView;
 import com.example.jingbin.webviewstudy.config.MyJavascriptInterface;
@@ -52,8 +55,10 @@ import com.example.jingbin.webviewstudy.utils.WebTools;
  * 被作为第三方浏览器打开
  *
  * @author jingbin
- * link to https://github.com/youlookwhat/WebViewStudy
+ * link to https://github.com/youlookwhat/ByWebView
+ * new to {@link ByWebViewActivity}
  */
+@Deprecated
 public class WebViewActivity extends AppCompatActivity implements IWebPageView {
 
     // 进度条
@@ -83,7 +88,7 @@ public class WebViewActivity extends AppCompatActivity implements IWebPageView {
 
     private void handleLoadUrl() {
         if (!TextUtils.isEmpty(mUrl) && mUrl.endsWith("mp4") && Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1) {
-            webView.loadData(WebTools.getVideoHtmlBody(mUrl), "text/html", "UTF-8");
+            webView.loadData(WebTools.getVideoHtmlBody(mTitle, mUrl), "text/html", "UTF-8");
         } else {
             webView.loadUrl(mUrl);
         }
@@ -103,7 +108,7 @@ public class WebViewActivity extends AppCompatActivity implements IWebPageView {
         mProgressBar.setVisibility(View.GONE);
         rl_web_container.addView(webView, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
         rl_web_container.addView(mProgressBar);
-        mProgressBar.setColor(ContextCompat.getColor(this, R.color.colorAccent));
+        mProgressBar.setColor(ContextCompat.getColor(this, R.color.colorRed));
         mProgressBar.show();
         initToolBar();
     }

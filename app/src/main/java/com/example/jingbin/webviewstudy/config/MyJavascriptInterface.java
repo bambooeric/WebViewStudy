@@ -1,19 +1,22 @@
 package com.example.jingbin.webviewstudy.config;
 
-import android.content.Context;
+import android.app.Activity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
+
+import com.example.jingbin.webviewstudy.utils.WebTools;
 
 /**
  * Created by jingbin on 2016/11/17.
  * js通信接口
  */
 public class MyJavascriptInterface {
-    private Context context;
 
-    public MyJavascriptInterface(Context context) {
-        this.context = context;
+    private Activity activity;
+
+    public MyJavascriptInterface(Activity context) {
+        this.activity = context;
     }
 
     /**
@@ -24,8 +27,10 @@ public class MyJavascriptInterface {
      */
     @JavascriptInterface
     public void imageClick(String src) {
+        // 在子线程
         Log.e("imageClick", "----点击了图片");
-        Log.e("src", src);
+        Log.e("---src", src);
+        WebTools.showToast(src);
     }
 
     /**
@@ -41,6 +46,7 @@ public class MyJavascriptInterface {
             Log.e("textClick", "----点击了文字");
             Log.e("type", type);
             Log.e("item_pk", item_pk);
+            WebTools.showToast("type: " + type + ", item_pk:" + item_pk);
         }
     }
 
@@ -50,6 +56,7 @@ public class MyJavascriptInterface {
     @JavascriptInterface
     public void startFunction() {
         Log.e("startFunction", "----无参");
+        WebTools.showToast("无参方法");
     }
 
     /**
@@ -59,7 +66,8 @@ public class MyJavascriptInterface {
      */
     @JavascriptInterface
     public void startFunction(String data) {
-        Log.e("startFunction", "----有参" + data);
+        Log.e("startFunction", "----有参方法: " + data);
+        WebTools.showToast("----有参方法: " + data);
     }
 
     /**

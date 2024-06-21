@@ -9,11 +9,13 @@ import android.graphics.PixelFormat;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
+
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -41,11 +43,12 @@ import com.example.jingbin.webviewstudy.utils.WebTools;
  * 2、application 初始化
  * 3、gradle ndk配置
  * 4、jniLibs 配置
- * 5、添加权限 READ_PHONE_STATE
+ * 5、添加相关权限
  * 6、getWindow().setFormat(PixelFormat.TRANSLUCENT);
  *
  * @author jingbin
- * link to https://github.com/youlookwhat/WebViewStudy
+ * 腾讯x5文档地址：https://x5.tencent.com/docs/access.html
+ * link to https://github.com/youlookwhat/ByWebView
  */
 public class X5WebViewActivity extends AppCompatActivity implements IX5WebPageView {
 
@@ -84,7 +87,7 @@ public class X5WebViewActivity extends AppCompatActivity implements IX5WebPageVi
     private void initTitle() {
         StatusBarUtil.setColor(this, ContextCompat.getColor(this, R.color.colorPrimary), 0);
         mProgressBar = findViewById(R.id.pb_progress);
-        mProgressBar.setColor(ContextCompat.getColor(this, R.color.colorPink), ContextCompat.getColor(this, R.color.colorAccent));
+        mProgressBar.setColor(ContextCompat.getColor(this, R.color.colorPink), ContextCompat.getColor(this, R.color.color_FF4081));
         mProgressBar.show();
         webView = findViewById(R.id.webview_detail);
         mTitleToolBar = findViewById(R.id.title_tool_bar);
@@ -344,6 +347,7 @@ public class X5WebViewActivity extends AppCompatActivity implements IX5WebPageVi
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        super.onActivityResult(requestCode, resultCode, intent);
         if (requestCode == MyWebChromeClient.FILECHOOSER_RESULTCODE) {
             mWebChromeClient.mUploadMessage(intent, resultCode);
         } else if (requestCode == MyWebChromeClient.FILECHOOSER_RESULTCODE_FOR_ANDROID_5) {

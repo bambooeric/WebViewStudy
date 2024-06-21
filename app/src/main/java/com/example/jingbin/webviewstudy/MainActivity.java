@@ -4,9 +4,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -19,10 +20,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.jingbin.webviewstudy.tencentx5.X5WebViewActivity;
+import com.example.jingbin.webviewstudy.ui.ByWebViewActivity;
+import com.example.jingbin.webviewstudy.ui.CoordinatorWebActivity;
+import com.example.jingbin.webviewstudy.ui.WVJBWebViewActivity;
 import com.example.jingbin.webviewstudy.utils.StatusBarUtil;
 
+import me.jingbin.web.ByWebTools;
+
 /**
- * Link to: https://github.com/youlookwhat/WebViewStudy
+ * Link to: https://github.com/youlookwhat/ByWebView
  * contact me: https://www.jianshu.com/u/e43c6e979831
  */
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -31,6 +37,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static boolean isLaunch = false;
     private AutoCompleteTextView etSearch;
     private RadioButton rbSystem;
+    private int state = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +57,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.bt_upload_photo).setOnClickListener(this);
         findViewById(R.id.bt_call).setOnClickListener(this);
         findViewById(R.id.bt_java_js).setOnClickListener(this);
+        findViewById(R.id.bt_toolbar).setOnClickListener(this);
+        findViewById(R.id.bt_wvjbwebview).setOnClickListener(this);
 
         rbSystem = findViewById(R.id.rb_system);
         etSearch = findViewById(R.id.et_search);
@@ -76,28 +85,40 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 openUrl();
                 break;
             case R.id.bt_baidu:// 百度一下
+                state = 0;
                 String baiDuUrl = "http://www.baidu.com";
                 loadUrl(baiDuUrl, getString(R.string.text_baidu));
                 break;
             case R.id.bt_movie:// 网络视频
+                state = 0;
                 String movieUrl = "https://sv.baidu.com/videoui/page/videoland?context=%7B%22nid%22%3A%22sv_5861863042579737844%22%7D&pd=feedtab_h5";
                 loadUrl(movieUrl, getString(R.string.text_movie));
                 break;
             case R.id.bt_upload_photo:// 上传图片
+                state = 0;
                 String uploadUrl = "file:///android_asset/upload_photo.html";
-                loadUrl(uploadUrl, getString(R.string.text_movie));
+                loadUrl(uploadUrl, getString(R.string.text_upload_photo));
                 break;
             case R.id.bt_call:// 打电话、发短信、发邮件、JS
+                state = 1;
                 String callUrl = "file:///android_asset/callsms.html";
                 loadUrl(callUrl, getString(R.string.text_js));
                 break;
             case R.id.bt_java_js://  js与android原生代码互调
+                state = 2;
                 String javaJs = "file:///android_asset/java_js.html";
                 loadUrl(javaJs, getString(R.string.js_android));
                 break;
             case R.id.bt_deeplink:// DeepLink通过网页跳入App
+                state = 0;
                 String deepLinkUrl = "file:///android_asset/deeplink.html";
                 loadUrl(deepLinkUrl, getString(R.string.deeplink));
+                break;
+            case R.id.bt_toolbar:// 自定义WebView，与ToolBar联动
+                CoordinatorWebActivity.loadUrl(this, "http://www.baidu.com", "百度一下", 0);
+                break;
+            case R.id.bt_wvjbwebview:// 自定义WebView, WVJBWebView JSBridge
+                WVJBWebViewActivity.loadUrl(this, "file:///android_asset/java_js_bridge.html", "", 0);
                 break;
             case R.id.tv_version:
                 AlertDialog.Builder builder = new AlertDialog.Builder(v.getContext());
@@ -112,7 +133,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 builder.setPositiveButton("去star", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        loadUrl("https://github.com/youlookwhat/WebViewStudy", "WebViewStudy");
+                        state = 0;
+                        loadUrl("https://github.com/youlookwhat/ByWebView", "ByWebView");
                     }
                 });
                 builder.show();
@@ -126,28 +148,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * 打开网页
      */
     private void openUrl() {
-        String url = etSearch.getText().toString().trim();
-        if (TextUtils.isEmpty(url)) {
-            // 空url
-            url = "https://github.com/youlookwhat/WebViewStudy";
-
-        } else if (!url.startsWith("http") && url.contains("http")) {
-            // 有http且不在头部
-            url = url.substring(url.indexOf("http"), url.length());
-
-        } else if (url.startsWith("www")) {
-            // 以"www"开头
-            url = "http://" + url;
-
-        } else if (!url.startsWith("http") && (url.contains(".me") || url.contains(".com") || url.contains(".cn"))) {
-            // 不以"http"开头且有后缀
-            url = "http://www." + url;
-
-        } else if (!url.startsWith("http") && !url.contains("www")) {
-            // 输入纯文字 或 汉字的情况
-            url = "http://m5.baidu.com/s?from=124n&word=" + url;
-        }
-        loadUrl(url, "详情");
+        state = 0;
+        String url = ByWebTools.getUrl(etSearch.getText().toString().trim());
+        loadUrl(!TextUtils.isEmpty(url) ? url : "https://github.com/youlookwhat/ByWebView", "ByWebView");
     }
 
     @Override
@@ -160,10 +163,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.actionbar_update:
-                loadUrl("http://d.6short.com/webviewstudy", "网页浏览器 - fir.im");
+                state = 0;
+                loadUrl("https://github.com/youlookwhat/download/raw/main/ByWebView.apk", "ByWebView.apk");
                 break;
             case R.id.actionbar_about:
-                loadUrl("https://github.com/youlookwhat/WebViewStudy", "WebViewStudy");
+                state = 0;
+                loadUrl("https://github.com/youlookwhat/ByWebView", "ByWebView");
                 break;
             default:
                 break;
@@ -173,7 +178,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void loadUrl(String mUrl, String mTitle) {
         if (rbSystem.isChecked()) {
-            WebViewActivity.loadUrl(this, mUrl, mTitle);
+//            WebViewActivity.loadUrl(this, mUrl, mTitle);
+            ByWebViewActivity.loadUrl(this, mUrl, mTitle, state);
         } else {
             X5WebViewActivity.loadUrl(this, mUrl, mTitle);
         }
